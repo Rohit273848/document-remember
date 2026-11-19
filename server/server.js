@@ -6,7 +6,7 @@ import app from './app.js';
 import { startReminderJobs } from './jobs/reminderJob.js';
 
 await connectDatabase();
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, '0.0.0.0', () => {
   console.info(`Hearth API listening on port ${env.PORT}`);
   startReminderJobs();
 });

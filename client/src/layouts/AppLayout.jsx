@@ -31,7 +31,7 @@ export default function AppLayout() {
   const { user, families, selectedFamily, selectFamily } = useAuth(); const [mobileNav, setMobileNav] = useState(false); const [notificationsOpen, setNotificationsOpen] = useState(false); const [notifications, setNotifications] = useState([]); const [unread, setUnread] = useState(0); const navigate = useNavigate();
   const loadNotifications = () => api.get('/notifications?limit=5').then(({ data }) => { setNotifications(data.notifications); setUnread(data.unread); }).catch(() => {});
   useEffect(() => { loadNotifications(); const timer = window.setInterval(loadNotifications, 60000); return () => window.clearInterval(timer); }, []);
-  const logout = async () => { await api.post('/auth/logout').catch(() => {}); window.location.href = '/login'; };
+  const logout = async () => { localStorage.removeItem('hearth-token'); await api.post('/auth/logout').catch(() => {}); window.location.href = '/login'; };
   const navLink = (item) => <NavLink key={item.to} to={item.to} onClick={() => setMobileNav(false)} className={({ isActive }) => `side-link ${isActive ? 'side-link-active' : ''}`}><item.icon size={18} strokeWidth={1.8} /><span>{t(item.label)}</span></NavLink>;
   return <div className="app-shell">
     {mobileNav && <button className="mobile-overlay" onClick={() => setMobileNav(false)} aria-label={t('Close navigation')} />}

@@ -9,7 +9,15 @@ import { asyncHandler, AppError } from '../utils/errors.js';
 
 function issueSession(user, res) {
   const token = jwt.sign({ sub: user.id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN, issuer: 'hearth-family-documents' });
-  res.cookie(env.COOKIE_NAME, token, { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+  const isProduction = env.NODE_ENV === 'production';
+  res.cookie(env.COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  return token;
 }
 async function memberships(userId) {
   return FamilyMember.find({ userId, status: 'active' }).populate('familyId', 'familyName timezone backupPersonId').lean();
@@ -18,14 +26,25 @@ export const register = asyncHandler(async (req, res) => {
   const email = req.body.email.toLowerCase();
   if (await User.exists({ email })) throw new AppError('An account with this email already exists.', 409, 'EMAIL_IN_USE');
   const user = await User.create({ name: req.body.name, email, language: req.body.language || 'en', timezone: env.DEFAULT_TIMEZONE, passwordHash: await bcrypt.hash(req.body.password, 12) });
-  issueSession(user, res); res.status(201).json({ user: user.toJSON(), families: [] });
+  const token = issueSession(user, res);
+  res.status(201).json({ user: user.toJSON(), families: [], token });
 });
 export const login = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: req.body.email.toLowerCase() }).select('+passwordHash');
   if (!user || !(await bcrypt.compare(req.body.password, user.passwordHash))) throw new AppError('Email or password is incorrect.', 401, 'INVALID_CREDENTIALS');
-  issueSession(user, res); res.json({ user: user.toJSON(), families: await memberships(user.id) });
+  const token = issueSession(user, res);
+  res.json({ user: user.toJSON(), families: await memberships(user.id), token });
 });
-export const logout = (_req, res) => { res.clearCookie(env.COOKIE_NAME, { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'lax', path: '/' }); res.status(204).end(); };
+export const logout = (_req, res) => {
+  const isProduction = env.NODE_ENV === 'production';
+  res.clearCookie(env.COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
+  });
+  res.status(204).end();
+};
 export const me = asyncHandler(async (req, res) => res.json({ user: req.user.toJSON(), families: await memberships(req.user.id) }));
 export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: req.body.email.toLowerCase() });

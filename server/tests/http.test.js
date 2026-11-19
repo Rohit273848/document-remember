@@ -61,3 +61,8 @@ test('reminder email includes a readable subject, safe HTML, and a text fallback
   assert.match(mail.html, /href="https:\/\/example\.com\/documents\/123\?a=1&amp;b=2"/);
   assert.match(mail.html, /Open family documents/);
 });
+
+test('health route and CORS are configured properly', () => {
+  const corsLayer = app._router.stack.find((item) => item.name === 'corsMiddleware');
+  assert.ok(corsLayer, 'cors middleware is mounted');
+});

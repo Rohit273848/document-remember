@@ -17,15 +17,36 @@ import userRoutes from './routes/users.js';
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use(helmet());
-const allowedOrigins = [env.CLIENT_ORIGIN, 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'];
+
+const configuredOrigins = (env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  env.APP_URL ? env.APP_URL.replace(/\/+$/, '') : null,
+   'https://document-remember.onrender.com/',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+].filter(Boolean));
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || (env.NODE_ENV === 'development' && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    if (
+      allowedOrigins.has(cleanOrigin) ||
+      (env.NODE_ENV === 'development' && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) ||
+      (/\.vercel\.app$/.test(cleanOrigin))
+    ) {
+      return callback(null, true);
     }
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

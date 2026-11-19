@@ -5,11 +5,13 @@ import Joi from 'joi';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
-dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true });
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true });
+}
 
 const schema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
-  PORT: Joi.number().default(4000), CLIENT_ORIGIN: Joi.string().uri().default('http://localhost:5173'),
+  PORT: Joi.number().default(4000), CLIENT_ORIGIN: Joi.string().default('http://localhost:5173'),
   APP_URL: Joi.string().uri().default('http://localhost:5173'), MONGODB_URI: Joi.string().required(),
   JWT_SECRET: Joi.string().min(32).required(), JWT_EXPIRES_IN: Joi.string().default('7d'),
   COOKIE_NAME: Joi.string().default('family_session'), DEFAULT_TIMEZONE: Joi.string().default('Asia/Kolkata'),

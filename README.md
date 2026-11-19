@@ -47,6 +47,15 @@ Run `npm run dev` once to start both services together. If you prefer separate t
 
 For a production frontend build, run `npm run build`. To run the server’s unit tests, run `npm test`. Start only the API with `npm start` after building the client separately.
 
+## Deployment (Vercel & Render)
+
+The project is fully pre-configured for deploying the **frontend on Vercel** and the **backend API on Render**.
+
+See the comprehensive [Deployment Guide](DEPLOYMENT.md) for step-by-step instructions.
+
+- **Frontend on Vercel**: Configured with `vercel.json` for SPA client routing, and `VITE_API_URL` to connect to Render.
+- **Backend on Render**: Configured with `render.yaml` for 1-click Blueprint deployment, `trust proxy` for reverse proxy support, dynamic CORS allowing `*.vercel.app`, and dual cookie/Bearer token authentication.
+
 ## Database indexes
 
 Schema indexes cover unique user emails, one membership record per family/user, document family/owner/date lookups, unique version numbers, reminder de-duplication and notification de-duplication. Before first production use, run:
