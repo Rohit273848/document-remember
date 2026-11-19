@@ -1,0 +1,18 @@
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { authenticate } from '../middleware/auth.js';
+import { validate } from '../utils/validation.js';
+import { registerSchema, loginSchema, forgotSchema, resetSchema, profileSchema, changePasswordSchema } from '../validators/schemas.js';
+import * as auth from '../controllers/auth.js';
+const router = Router();
+const authLimit = rateLimit({ windowMs: 15 * 60_000, limit: 12, standardHeaders: true, legacyHeaders: false });
+router.post('/register', authLimit, validate(registerSchema), auth.register);
+router.post('/login', authLimit, validate(loginSchema), auth.login);
+router.post('/logout', auth.logout);
+router.post('/forgot-password', authLimit, validate(forgotSchema), auth.forgotPassword);
+router.post('/reset-password', authLimit, validate(resetSchema), auth.resetPassword);
+router.get('/me', authenticate, auth.me);
+router.get('/profile', authenticate, auth.getProfile);
+router.put('/profile', authenticate, validate(profileSchema), auth.updateProfile);
+router.put('/change-password', authenticate, validate(changePasswordSchema), auth.changePassword);
+export default router;

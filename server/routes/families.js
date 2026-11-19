@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { authenticate, requireFamily, allowRoles } from '../middleware/auth.js';
+import { validate } from '../utils/validation.js';
+import { familySchema, familyUpdateSchema, inviteSchema, roleSchema } from '../validators/schemas.js';
+import * as families from '../controllers/families.js';
+const router = Router(); router.use(authenticate);
+router.get('/', families.listFamilies); router.post('/', validate(familySchema), families.createFamily);
+router.get('/:familyId', requireFamily(), (req, res) => res.json({ family: req.family, role: req.member.role }));
+router.put('/:familyId', requireFamily(), allowRoles('keeper'), validate(familyUpdateSchema), families.updateFamily);
+router.get('/:familyId/members', requireFamily(), families.listMembers);
+router.post('/:familyId/invitations', requireFamily(), allowRoles('keeper'), validate(inviteSchema), families.inviteMember);
+router.get('/:familyId/invitations', requireFamily(), allowRoles('keeper'), families.listInvitations);
+router.put('/:familyId/members/:memberId/role', requireFamily(), allowRoles('keeper'), validate(roleSchema), families.changeMemberRole);
+router.delete('/:familyId/members/:memberId', requireFamily(), allowRoles('keeper'), families.removeMember);
+export default router;

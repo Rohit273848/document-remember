@@ -1,0 +1,3 @@
+import ActivityLog from '../models/ActivityLog.js';
+import { asyncHandler } from '../utils/errors.js';
+export const listActivity = asyncHandler(async (req, res) => { const page = Math.max(1, Number(req.query.page) || 1); const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 30)); const [activity, total] = await Promise.all([ActivityLog.find({ familyId: req.family.id }).populate('userId', 'name').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit), ActivityLog.countDocuments({ familyId: req.family.id })]); res.json({ activity, total, page, pages: Math.ceil(total / limit) }); });

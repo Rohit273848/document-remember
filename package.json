@@ -1,0 +1,18 @@
+{
+  "name": "family-document-renewal-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure family document storage and renewal reminders",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "concurrently -n api,web -c teal,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:client": "npm --workspace client run dev",
+    "dev:server": "npm --workspace server run dev",
+    "build": "npm --workspace client run build",
+    "start": "npm --workspace server run start",
+    "test": "npm --workspace server run test",
+    "test:reminder": "node server/scripts/sendDemoReminder.js",
+    "indexes": "npm --workspace server run indexes"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}

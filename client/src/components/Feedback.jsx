@@ -1,0 +1,5 @@
+import { AlertCircle, LoaderCircle, Inbox } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext.jsx';
+export function Loading({ label = 'Loading' }) { const { t } = useLanguage(); return <div className="loading-state"><LoaderCircle className="spin" size={21} /> <span>{t(label)}…</span></div>; }
+export function ErrorState({ message = 'We couldn’t load this right now.', onRetry }) { const { t } = useLanguage(); return <div className="empty-state"><span className="empty-icon error-icon"><AlertCircle size={22} /></span><h3>{t('Something went wrong')}</h3><p>{t(message)}</p>{onRetry && <button className="btn btn-outline" onClick={onRetry}>{t('Try again')}</button>}</div>; }
+export function EmptyState({ title = 'Nothing here yet', message = 'When you add something, it will show up here.', action }) { const { t } = useLanguage(); return <div className="empty-state"><span className="empty-icon"><Inbox size={22} /></span><h3>{t(title)}</h3><p>{t(message)}</p>{action}</div>; }
